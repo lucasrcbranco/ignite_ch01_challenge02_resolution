@@ -25,19 +25,12 @@ function checksExistsUserAccount(request, response, next) {
 
 function checksCreateTodosUserAvailability(request, response, next) {
   const {user} = request;
-  if(!user) {
-    return response.status(403).json({error: "This user doesnt exists!"});
-  }
-  const userId = user.id;
-  const userExists = users.find(user => user.id === userId);
-  if(!userExists) {
-    return response.status(403).json({error: "This user doesnt exists!"});
-  }
-
+ 
   if(user.pro) {
     next();
   }
-  if(user.todos.length >= 10) {
+  const toDos = user.todos.length < 10;
+  if(!toDos) {
     return response.status(403).json({error: "Become a PRO to have full access."});
   } else {
     next();
