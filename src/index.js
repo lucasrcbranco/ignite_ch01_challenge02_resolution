@@ -10,19 +10,82 @@ app.use(cors());
 const users = [];
 
 function checksExistsUserAccount(request, response, next) {
-  // Complete aqui
+  const {username} = request.headers;
+  if(!username) {
+    return response.status(404).json({error: "This user doesnt exists!"});
+  }
+  const userAlreadyExists = users.find(user => user.username === username);
+  if(!userAlreadyExists) {
+    return response.status(404).json({error: "This user doesnt exists!"});
+  }
+
+  request.user = userAlreadyExists;
+  next();
 }
 
 function checksCreateTodosUserAvailability(request, response, next) {
-  // Complete aqui
+  const {user} = request;
+  if(!user) {
+    console.log('c');
+    return response.status(403).json({error: "This user doesnt exists!"});
+  }
+  const userId = user.id;
+  const userExists = users.find(user => user.id === userId);
+  if(!userExists) {
+    return response.status(403).json({error: "This user doesnt exists!"});
+  }
+
+  if(user.pro) {
+    request.user = user;
+    next();
+  }
+  const userToDos = user.todos.length < 10;
+  if(!userToDos) {
+    return response.status(403).send();
+  } else {
+    request.user = user;
+    next();
+  }
 }
 
 function checksTodoExists(request, response, next) {
-  // Complete aqui
+  const {username} = request.headers;
+  const {id} = request.params;
+  if(!username) {
+    return response.status(404).json({error: "This user doesnt exists!"});
+  }
+  if(!id) {
+    return response.status(404).json({error: "This id doesnt exists!"});
+  }
+  const userExists = users.find(user => user.username === username);
+  if(!userExists) {
+    return response.status(404).json({error: "This user doesnt exists!"});
+  }
+  const isIdValid = validate(id);
+  if(!isIdValid) {
+    return response.status(400).json({error: "This id doesnt exists!"});
+  }
+  const isTodoValid = userExists.todos.find(todo => todo.id === id);
+  if(!isTodoValid) {
+    return response.status(404).json({error: "This id doesnt exists!"});
+  }
+
+  request.user = userExists;
+  request.todo = isTodoValid;
+  next();
 }
 
 function findUserById(request, response, next) {
-  // Complete aqui
+  const {id} = request.params;
+  const user = users.find(user => user.id === id);
+  if(!id) {
+    return response.status(404).json({error: "This id doesnt exists!"});
+  }
+  if(!user) {
+    return response.status(404).json({error: "This user doesnt exists!"})
+  }
+  request.user = user;
+  next();
 }
 
 app.post('/users', (request, response) => {
