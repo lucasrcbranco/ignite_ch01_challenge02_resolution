@@ -26,7 +26,6 @@ function checksExistsUserAccount(request, response, next) {
 function checksCreateTodosUserAvailability(request, response, next) {
   const {user} = request;
   if(!user) {
-    console.log('c');
     return response.status(403).json({error: "This user doesnt exists!"});
   }
   const userId = user.id;
@@ -36,14 +35,11 @@ function checksCreateTodosUserAvailability(request, response, next) {
   }
 
   if(user.pro) {
-    request.user = user;
     next();
   }
-  const userToDos = user.todos.length < 10;
-  if(!userToDos) {
-    return response.status(403).send();
+  if(user.todos.length >= 10) {
+    return response.status(403).json({error: "Become a PRO to have full access."});
   } else {
-    request.user = user;
     next();
   }
 }
